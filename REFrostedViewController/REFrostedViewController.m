@@ -49,7 +49,7 @@
 {
     self = [super init];
     if (self) {
-        [self commonInit];
+        [self commonInit2];
     }
     return self;
 }
@@ -58,12 +58,18 @@
 {
     self = [super initWithCoder:decoder];
     if (self) {
-        [self commonInit];
+        [self commonInit2];
     }
     return self;
 }
-
-- (void)commonInit
+-(id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if(self)
+        [self commonInit2];
+    return self;
+}
+- (void)commonInit2
 {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -96,7 +102,8 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    [self re_displayController:self.contentViewController frame:self.view.bounds];
+    if(self.contentViewController)
+        [self re_displayController:self.contentViewController frame:self.view.bounds];
 }
 
 - (UIViewController *)childViewControllerForStatusBarStyle
@@ -114,11 +121,11 @@
 
 - (void)setContentViewController:(UIViewController *)contentViewController
 {
-    if (!_contentViewController) {
+    if (!_contentViewController || !contentViewController) {
         _contentViewController = contentViewController;
         return;
     }
-    
+
     [_contentViewController removeFromParentViewController];
     [_contentViewController.view removeFromSuperview];
     
@@ -191,7 +198,7 @@
     
     if (!self.liveBlur) {
         if (REUIKitIsFlatMode() && !self.blurTintColor) {
-            self.blurTintColor = [UIColor colorWithWhite:1 alpha:0.75f];
+            self.blurTintColor = [UIColor colorWithWhite:1 alpha:0.65f];
         }
         self.containerViewController.screenshotImage = [[self.contentViewController.view re_screenshot] re_applyBlurWithRadius:self.blurRadius tintColor:self.blurTintColor saturationDeltaFactor:self.blurSaturationDeltaFactor maskImage:nil];
     }
@@ -199,7 +206,10 @@
     [self re_displayController:self.containerViewController frame:self.contentViewController.view.frame];
     self.visible = YES;
 }
-
+-(BOOL)hadShowed
+{
+    return self.visible;
+}
 - (void)hideMenuViewControllerWithCompletionHandler:(void(^)(void))completionHandler
 {
     if (!self.visible) {//when call hide menu before menuViewController added to containerViewController, the menuViewController will never added to containerViewController
@@ -210,6 +220,7 @@
         [self.containerViewController refreshBackgroundImage];
     }
     [self.containerViewController hideWithCompletionHandler:completionHandler];
+
 }
 
 - (void)resizeMenuViewControllerToSize:(CGSize)size
